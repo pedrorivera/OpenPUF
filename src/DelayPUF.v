@@ -13,8 +13,8 @@
  */
 
 
-`define SIM
-`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+//`define SIM
+//`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
 module DelayPUF #(parameter LENGTH = 8) ( 
    input clk,
