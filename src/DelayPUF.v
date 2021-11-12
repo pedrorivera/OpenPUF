@@ -13,8 +13,8 @@
  */
 
 
-//`define SIM
-//`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+`define SIM
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
 module DelayPUF #(parameter LENGTH = 8) ( 
    input clk,
@@ -32,8 +32,8 @@ module DelayPUF #(parameter LENGTH = 8) (
 
    d_sync run_ds(clk, reset, a_run, run); // In case run is async
 
-   // Instantiate LENGTH number of MUX pairs
-   // TODO: parametrize instantiation
+   // Instantiate LENGTH number of MUX pairs. TODO: parametrize
+   /* verilator lint_on UNOPTFLAT */
    mux_pair stage0(a_in[0], b_in[0], a_challenge[0], a_out[0], b_out[0]);
    mux_pair stage1(a_in[1], b_in[1], a_challenge[1], a_out[1], b_out[1]);
    mux_pair stage2(a_in[2], b_in[2], a_challenge[2], a_out[2], b_out[2]);
@@ -42,10 +42,12 @@ module DelayPUF #(parameter LENGTH = 8) (
    mux_pair stage5(a_in[5], b_in[5], a_challenge[5], a_out[5], b_out[5]);
    mux_pair stage6(a_in[6], b_in[6], a_challenge[6], a_out[6], b_out[6]);
    mux_pair stage7(a_in[7], b_in[7], a_challenge[7], a_out[7], b_out[7]);
+   /* verilator lint_off UNOPTFLAT */
 
    // Explicitly assign outputs of each stage to inputs. It's done this way to
    // enable simulating different delays between each stage via '#delay'
-   assign {a_in[0], b_in[0]} = run;
+   assign #2 a_in[0] = run;
+   assign #1 b_in[0] = run;
    assign #3 a_in[1] = a_out[0];
    assign #4 b_in[1] = b_out[0];
    assign #5 a_in[2] = a_out[1];
@@ -68,10 +70,12 @@ module DelayPUF #(parameter LENGTH = 8) (
    assign latch_en = b_final;
    
    `ifdef SIM
+      /* verilator lint_off LATCH */
       always @* begin // Obtained from 'yosys> help $_DLATCH_P_+'
         if (latch_en == 1)
             latch_q <= latch_d;
       end
+      /* verilator lint_on LATCH */
    `else
       $_DLATCH_P_ arbiter_latch(.E(latch_en), .D(latch_d), .Q(latch_q)); 
    `endif

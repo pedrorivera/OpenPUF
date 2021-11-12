@@ -5,9 +5,9 @@
 
 module DelayPUF_tb;
 	
-	// Signature for delays: #3,#4,#5,#4,#5,#5,#3,#6,#5,#6,#4,#3,#5,#6,#3,#3
-	localparam EXPECTED_SIGNATURE = 256'h6996000100010990000169966996000100010990699600010990000100010000;
-    localparam HALF_PERIOD = 5;  // duration for each cycle = 10 * 1 ns  = 10ns
+	// Signature for hard-coded delays: #2,#1,#3,#4,#5,#4,#5,#5,#3,#6,#5,#6,#4,#3,#5,#6,#3,#3
+	localparam EXPECTED_SIGNATURE = 256'heffeffff1001effe000000004bb4ffff10010000effe1001ffffffffb44b;
+   localparam HALF_PERIOD = 5;  // duration for each cycle = 10 * 1 ns  = 10ns
 	localparam PUF_LENGTH = 8;
 
     wire result;
@@ -23,12 +23,15 @@ module DelayPUF_tb;
 		signature = 0;
 		stopSig = 1'b0;
 		reset = 1'b0;
-	    $display("Testing the full challenge range, expecting output to toggle arbitrarily");
+	   run = 1'b0;
+
+	   $display("Testing the full challenge range...");
+		
 		for (i = 0; i < 256; i = i + 1) begin
-		    run = 0;
+		    run = 1'b1;
 		    challenge = i;
 		    #100; // arbitrary for now
-		    run = 1;
+		    run = 1'b0;
 		    #100;
 		    // Create a sort of signature by logging the results of each
 		    // challenge in an N-bit vector, where N is 2^PUF_LENGTH
@@ -50,7 +53,7 @@ module DelayPUF_tb;
 	// Debug. Monitor changes
 	always @(result)
 	begin
-		$strobe("result changed - time=%0t challenge=0x%0h result=%0h", $time, challenge, result);
+	//	$strobe("result changed - time=%0t challenge=0x%0h result=%0h", $time, challenge, result);
 	end
 
 	// The clock is only used to drive the double synchronizers
@@ -65,7 +68,7 @@ module DelayPUF_tb;
 	always @(posedge clk)
 	begin
 		if (stopSig == 1'b1)
-	    	$stop;
+	    	$finish;
 	end
     
 endmodule
