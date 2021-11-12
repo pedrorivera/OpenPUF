@@ -1,7 +1,10 @@
 /* Minimal testbech to sanity-check the implementation. There are many
    oportunities for improvement. */
 
+/* verilator lint_off STMTDLY */
+
 `timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+`define SIM_MODE
 
 module DelayPUF_tb;
 	
@@ -28,10 +31,10 @@ module DelayPUF_tb;
 	   $display("Testing the full challenge range...");
 		
 		for (i = 0; i < 256; i = i + 1) begin
-		    run = 1'b1;
-		    challenge = i;
-		    #100; // arbitrary for now
 		    run = 1'b0;
+		    challenge = i[7:0];
+		    #100; // arbitrary, for now
+		    run = 1'b1;
 		    #100;
 		    // Create a sort of signature by logging the results of each
 		    // challenge in an N-bit vector, where N is 2^PUF_LENGTH

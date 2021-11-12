@@ -4,17 +4,16 @@
  * Copyright (c) 2021 Pedro Rivera
  * Licence: Apache-2.0
  *
- *  TODO:
+ *  Future work:
+ *   - Parametrize the MUX instantiation and delay assignment
+ *   - Have a bit or way to notify the result is valid 
+ *     (instead of waiting an arbitrary # of clock cycles)
  *   - Need constraints for:
  *     - False path through the mux chain, so it doesn't try to meet timing
  *     - Setting the propagation delays of both lanes as equal as possible
- *     - Having a valid bit to notify the result is valid 
- *       (instead of waiting an arbitrary # of clock cycles)
  */
 
-
-//`define SIM
-//`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
 module DelayPUF #(parameter LENGTH = 8) ( 
    input clk,
@@ -46,8 +45,8 @@ module DelayPUF #(parameter LENGTH = 8) (
 
    // Explicitly assign outputs of each stage to inputs. It's done this way to
    // enable simulating different delays between each stage via '#delay'
-   assign #2 a_in[0] = run;
-   assign #1 b_in[0] = run;
+   assign #2 a_in[0] = ~run;
+   assign #1 b_in[0] = ~run;
    assign #3 a_in[1] = a_out[0];
    assign #4 b_in[1] = b_out[0];
    assign #5 a_in[2] = a_out[1];
@@ -69,7 +68,7 @@ module DelayPUF #(parameter LENGTH = 8) (
    assign latch_d  = a_final;
    assign latch_en = b_final;
    
-   `ifdef SIM
+   `ifdef SIM_MODE
       /* verilator lint_off LATCH */
       always @* begin // Obtained from 'yosys> help $_DLATCH_P_+'
         if (latch_en == 1)
@@ -92,7 +91,7 @@ module mux_pair(
    output reg out1,
    output reg out2
 );
-   `ifdef SIM
+   `ifdef SIM_MODE
 
       //(* via_celltype = "$_MUX_ Y" *)
       //(* via_celltype_defparam_WIDTH = 1 *)
